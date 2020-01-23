@@ -21,7 +21,8 @@ class UsersAPI(MethodView):
         try:
             users = User.query.all()
             responseObject = {
-                'users': [user.email for user in users]
+                'users': [user.email for user in users],
+                'ids': [user.id for user in users]
             }
 
             return make_response(jsonify(responseObject)), 200
