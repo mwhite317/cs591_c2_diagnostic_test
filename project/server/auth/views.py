@@ -7,6 +7,32 @@ from project.server import bcrypt, db
 from project.server.models import User
 
 auth_blueprint = Blueprint('auth', __name__)
+users_blueprint = Blueprint('users', __name__)
+
+
+# add something that shows all users
+
+class UsersAPI(MethodView):
+    """
+    Users Resource
+    """
+
+    def get(self):
+        try:
+            users = User.query.all()
+            responseObject = {
+                'users': [user.email for user in users]
+            }
+
+            return make_response(jsonify(responseObject)), 200
+
+        except Exception as e:
+            responseObject = {
+                'status': 'fail',
+                'message': 'Some error occurred. Please try again.'
+            }
+            return make_response(jsonify(responseObject)), 500
+
 
 class RegisterAPI(MethodView):
     """
@@ -14,15 +40,16 @@ class RegisterAPI(MethodView):
     """
 
     def get(self):
-    	responseObject = {
-    		'status': 'success',
-    		'message': 'Request successful but please send an HTTP POST request to register the user.'
-    	}
-    	return make_response(jsonify(responseObject)), 201
+        responseObject = {
+            'status': 'success',
+            'message': 'Request successful but please send an HTTP POST request to register the user.'
+        }
+        return make_response(jsonify(responseObject)), 201
 
     def post(self):
         # get the post data
-        post_data = request.get_json(); print(request)
+        post_data = request.get_json();
+        print(request)
         # check if user already exists
         user = User.query.filter_by(email=post_data.get('email')).first()
         if not user:
@@ -59,10 +86,17 @@ class RegisterAPI(MethodView):
 
 # define the API resources
 registration_view = RegisterAPI.as_view('register_api')
+users_view = UsersAPI.as_view('users_api')
 
 # add Rules for API Endpoints
 auth_blueprint.add_url_rule(
     '/auth/register',
     view_func=registration_view,
     methods=['POST', 'GET']
+)
+
+users_blueprint.add_url_rule(
+    '/users/index',
+    view_func=users_view,
+    methods=['GET']
 )
